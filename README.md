@@ -29,7 +29,7 @@ a **direct playable stream URL** (HLS, DASH, MP4, etc.) plus optional playback m
 
 ```text
 ┌─────────────────────┐         bind + AIDL          ┌──────────────────────┐
-│  Host app           │  ──────────────────────────► │  Your extension app     │
+│  Host app           │  ──────────────────────────► │  Your extension app  │
 │  (Unifium Player)   │  ◄────────────────────────── │  ResolverService     │
 │                     │   Bundle result (stream URL) │                      │
 └─────────────────────┘                              └──────────────────────┘
