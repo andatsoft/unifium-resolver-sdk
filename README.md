@@ -1,9 +1,9 @@
 # Unifium Video Resolver SDK
 
-Developer guide for building **resolver plugin apps** that work
+Developer guide for building **resolver extension apps** that work
 with [Unifium Player](https://play.google.com/store/apps/details?id=com.andatsoft.apps.unifium).
 
-A resolver plugin receives a **page URL** (for example a YouTube or Facebook watch link) and returns
+A resolver extension receives a **page URL** (for example a YouTube or Facebook watch link) and returns
 a **direct playable stream URL** (HLS, DASH, MP4, etc.) plus optional playback metadata.
 
 ---
@@ -29,16 +29,16 @@ a **direct playable stream URL** (HLS, DASH, MP4, etc.) plus optional playback m
 
 ```text
 ┌─────────────────────┐         bind + AIDL          ┌──────────────────────┐
-│  Host app           │  ──────────────────────────► │  Your plugin app     │
+│  Host app           │  ──────────────────────────► │  Your extension app     │
 │  (Unifium Player)   │  ◄────────────────────────── │  ResolverService     │
 │                     │   Bundle result (stream URL) │                      │
 └─────────────────────┘                              └──────────────────────┘
 ```
 
-| Role           | Responsibility                                                                          |
-|----------------|-----------------------------------------------------------------------------------------|
-| **Host app**   | Discovers plugins, calls `match()`, invokes `resolveAsync()`, plays the returned stream |
-| **Plugin app** | Exposes an exported `Service`, implements URL matching and extraction                   |
+| Role              | Responsibility                                                                             |
+|-------------------|--------------------------------------------------------------------------------------------|
+| **Host app**      | Discovers extensions, calls `match()`, invokes `resolveAsync()`, plays the returned stream |
+| **Extension app** | Exposes an exported `Service`, implements URL matching and extraction                      |
 
 Communication uses:
 
@@ -178,7 +178,7 @@ Return an `int` from `match(url)`:
 
 | Constant                             | Value | Meaning                                      |
 |--------------------------------------|------:|----------------------------------------------|
-| `ResolverContract.MATCH_UNSUPPORTED` |     0 | This plugin cannot handle the URL            |
+| `ResolverContract.MATCH_UNSUPPORTED` |     0 | This extension cannot handle the URL         |
 | `ResolverContract.MATCH_GENERIC`     |     1 | Weak / fallback support                      |
 | `ResolverContract.MATCH_PROBABLE`    |    50 | Likely supported (same domain, typical path) |
 | `ResolverContract.MATCH_EXACT`       |   100 | Confident match (known URL pattern)          |
@@ -187,7 +187,7 @@ Return an `int` from `match(url)`:
 
 - Return `0` when you are sure the URL is not yours.
 - Prefer `100` only for URLs you handle reliably.
-- The host sorts plugins by score and may **auto-select** when one plugin clearly wins.
+- The host sorts extensions by score and may **auto-select** when one extension clearly wins.
 
 **Example:**
 
@@ -209,7 +209,7 @@ override fun computeMatchScore(url: String): Int {
 Contracts use string keys in `android.os.Bundle` for forward compatibility. Optional fields may be
 added in future API versions.
 
-### Request (host → plugin)
+### Request (host → extension)
 
 Built with `ResolverRequest.build()`:
 
@@ -236,7 +236,7 @@ val timeoutMs = ResolverRequest.getTimeoutMs(request)
 
 Respect `timeout` in long-running work; cancel jobs when possible if the host disconnects.
 
-### Result (plugin → host)
+### Result (extension → host)
 
 #### Success
 
@@ -300,7 +300,7 @@ interface IVideoResolverService {
 | Method                            | Description                                 |
 |-----------------------------------|---------------------------------------------|
 | `getApiVersion()`                 | Return `ResolverContract.API_VERSION` (`1`) |
-| `getResolverName()`               | User-visible plugin name                    |
+| `getResolverName()`               | User-visible extension name                 |
 | `match(url)`                      | Support score 0–100                         |
 | `resolveAsync(request, callback)` | **Async only** — invoke callback when done  |
 
@@ -344,7 +344,7 @@ Do not throw uncaught exceptions from the Binder thread. The base class maps exc
 
 ## ProGuard / R8
 
-If you enable minification in your plugin app, keep AIDL stubs:
+If you enable minification in your extension app, keep AIDL stubs:
 
 ```proguard
 -keep class com.andatsoft.ext.resolver.** { *; }
@@ -359,8 +359,8 @@ The SDK ships `consumer-rules.pro` for library consumers.
 
 ### With Unifium Player
 
-1. Build and install your resolver plugin APK.
-2. Install Unifium Player and enable your plugin.
-3. In Unifium: **More → Network stream**, paste a URL your plugin supports.
-4. If multiple plugins match, the host shows a **resolver picker** (name, icon, confidence).
+1. Build and install your resolver extension APK.
+2. Install Unifium Player and enable your extension.
+3. In Unifium: **More → Network stream**, paste a URL your extension supports.
+4. If multiple extensions match, the host shows a **resolver picker** (name, icon, confidence).
 5. After resolve, playback should start with the returned `video_url`.
