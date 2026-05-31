@@ -213,17 +213,19 @@ added in future API versions.
 
 Built with `ResolverRequest.build()`:
 
-| Key           | Type   | Required | Description                               |
-|---------------|--------|----------|-------------------------------------------|
-| `url`         | String | Yes      | Page or input URL to resolve              |
-| `api_version` | int    | No       | Contract version (default `1`)            |
-| `timeout`     | long   | No       | Suggested timeout in ms (default `30000`) |
+| Key             | Type   | Required | Description                                                            |
+|-----------------|--------|----------|------------------------------------------------------------------------|
+| `url`           | String | Yes      | Page or input URL to resolve                                           |
+| `api_version`   | int    | No       | Contract version (default `1`)                                         |
+| `timeout`       | long   | No       | Suggested timeout in ms (default `30000`)                              |
+| `video_quality` | String | No       | Hint for expected video quality (`high`, `medium`, `low`)              |
 
 ```kotlin
 val request = ResolverRequest.build(
     url = "https://example.com/watch/123",
     apiVersion = ResolverContract.API_VERSION,
     timeoutMs = 30_000L,
+    videoQuality = ResolverContract.VIDEO_QUALITY_HIGH
 )
 ```
 
@@ -232,6 +234,7 @@ Read values in your service:
 ```kotlin
 val pageUrl = ResolverRequest.getUrl(request)
 val timeoutMs = ResolverRequest.getTimeoutMs(request)
+val qualityHint = ResolverRequest.getVideoQuality(request)
 ```
 
 Respect `timeout` in long-running work; cancel jobs when possible if the host disconnects.
